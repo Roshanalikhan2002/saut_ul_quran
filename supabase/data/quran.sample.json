@@ -1,0 +1,148 @@
+{
+  "_comment": "DEMO sample — Al-Fatiha + Al-Ikhlas only, copied from supabase/migrations/004_seed.sql. Do not treat as a full Quran corpus.",
+  "surahs": [
+    {
+      "number": 1,
+      "name_ar": "الفاتحة",
+      "name_en": "Al-Fatiha",
+      "name_ur": "الفاتحہ",
+      "revelation_type": "makki",
+      "ayahs": [
+        {
+          "number": 1,
+          "text_ar": "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",
+          "translation_en": "In the name of Allah, the Entirely Merciful, the Especially Merciful.",
+          "translation_ur": "اللہ کے نام سے جو بے حد مہربان، نہایت رحم والا ہے۔",
+          "tajweed_html": null,
+          "tajweed_markup": [
+            { "start": 8, "end": 14, "rule": "ghunnah", "color": "#16A34A", "label": "غنة" },
+            { "start": 16, "end": 24, "rule": "madd", "color": "#2563EB", "label": "مد" }
+          ],
+          "juz": 1
+        },
+        {
+          "number": 2,
+          "text_ar": "ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَٰلَمِينَ",
+          "translation_en": "All praise is due to Allah, Lord of the worlds.",
+          "translation_ur": "سب تعریف اللہ کے لیے ہے جو تمام جہانوں کا رب ہے۔",
+          "tajweed_html": null,
+          "tajweed_markup": [
+            { "start": 18, "end": 28, "rule": "madd", "color": "#2563EB", "label": "مد لازم" }
+          ],
+          "juz": 1
+        },
+        {
+          "number": 3,
+          "text_ar": "ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",
+          "translation_en": "The Entirely Merciful, the Especially Merciful.",
+          "translation_ur": "بے حد مہربان، نہایت رحم والا۔",
+          "tajweed_html": null,
+          "tajweed_markup": [
+            { "start": 0, "end": 10, "rule": "madd", "color": "#2563EB", "label": "مد" },
+            { "start": 12, "end": 20, "rule": "madd", "color": "#2563EB", "label": "مد" }
+          ],
+          "juz": 1
+        },
+        {
+          "number": 4,
+          "text_ar": "مَٰلِكِ يَوْمِ ٱلدِّينِ",
+          "translation_en": "Sovereign of the Day of Recompense.",
+          "translation_ur": "جزا کے دن کا مالک۔",
+          "tajweed_html": null,
+          "tajweed_markup": [
+            { "start": 0, "end": 5, "rule": "madd", "color": "#2563EB", "label": "مد" }
+          ],
+          "juz": 1
+        },
+        {
+          "number": 5,
+          "text_ar": "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+          "translation_en": "It is You we worship and You we ask for help.",
+          "translation_ur": "ہم صرف تیری عبادت کرتے ہیں اور تجھی سے مدد مانگتے ہیں۔",
+          "tajweed_html": null,
+          "tajweed_markup": [
+            { "start": 0, "end": 6, "rule": "shaddah", "color": "#DC2626", "label": "شدة" },
+            { "start": 18, "end": 24, "rule": "shaddah", "color": "#DC2626", "label": "شدة" }
+          ],
+          "juz": 1
+        },
+        {
+          "number": 6,
+          "text_ar": "ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ",
+          "translation_en": "Guide us to the straight path.",
+          "translation_ur": "ہمیں سیدھا راستہ دکھا۔",
+          "tajweed_html": null,
+          "tajweed_markup": [
+            { "start": 8, "end": 18, "rule": "madd", "color": "#2563EB", "label": "مد" },
+            { "start": 7, "end": 9, "rule": "qalqalah", "color": "#CA8A04", "label": "قلقلة" }
+          ],
+          "juz": 1
+        },
+        {
+          "number": 7,
+          "text_ar": "صِرَٰطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ ٱلْمَغْضُوبِ عَلَيْهِمْ وَلَا ٱلضَّآلِّينَ",
+          "translation_en": "The path of those upon whom You have bestowed favor, not of those who have earned anger or of those who are astray.",
+          "translation_ur": "ان لوگوں کا راستہ جن پر تو نے انعام کیا، نہ کہ جن پر غضب ہوا اور نہ گمراہوں کا۔",
+          "tajweed_html": null,
+          "tajweed_markup": [
+            { "start": 0, "end": 6, "rule": "madd", "color": "#2563EB", "label": "مد" },
+            { "start": 20, "end": 24, "rule": "ikhfa", "color": "#7C3AED", "label": "اخفاء" },
+            { "start": 55, "end": 68, "rule": "madd", "color": "#2563EB", "label": "مد لازم" }
+          ],
+          "juz": 1
+        }
+      ]
+    },
+    {
+      "number": 112,
+      "name_ar": "الإخلاص",
+      "name_en": "Al-Ikhlas",
+      "name_ur": "الاخلاص",
+      "revelation_type": "makki",
+      "ayahs": [
+        {
+          "number": 1,
+          "text_ar": "قُلْ هُوَ ٱللَّهُ أَحَدٌ",
+          "translation_en": "Say, He is Allah, [who is] One.",
+          "translation_ur": "کہو وہ اللہ ایک ہے۔",
+          "tajweed_html": null,
+          "tajweed_markup": [
+            { "start": 12, "end": 16, "rule": "qalqalah", "color": "#CA8A04", "label": "قلقلة" }
+          ],
+          "juz": 30
+        },
+        {
+          "number": 2,
+          "text_ar": "ٱللَّهُ ٱلصَّمَدُ",
+          "translation_en": "Allah, the Eternal Refuge.",
+          "translation_ur": "اللہ بے نیاز ہے۔",
+          "tajweed_html": null,
+          "tajweed_markup": [],
+          "juz": 30
+        },
+        {
+          "number": 3,
+          "text_ar": "لَمْ يَلِدْ وَلَمْ يُولَدْ",
+          "translation_en": "He neither begets nor is born.",
+          "translation_ur": "نہ اس کی کوئی اولاد ہے اور نہ وہ کسی کی اولاد۔",
+          "tajweed_html": null,
+          "tajweed_markup": [
+            { "start": 6, "end": 10, "rule": "qalqalah", "color": "#CA8A04", "label": "قلقلة" }
+          ],
+          "juz": 30
+        },
+        {
+          "number": 4,
+          "text_ar": "وَلَمْ يَكُن لَّهُۥ كُفُوًا أَحَدٌۢ",
+          "translation_en": "Nor is there to Him any equivalent.",
+          "translation_ur": "اور اس کے برابر کوئی نہیں۔",
+          "tajweed_html": null,
+          "tajweed_markup": [
+            { "start": 28, "end": 32, "rule": "ikhfa", "color": "#7C3AED", "label": "اخفاء" }
+          ],
+          "juz": 30
+        }
+      ]
+    }
+  ]
+}
