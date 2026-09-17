@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { useAuth } from '@/contexts/AuthContext'
 import { getDashboardPath, getPrimaryRole } from '@/lib/auth'
 import { APP_NAME } from '@/lib/constants'
+import { PRIMARY_ADMIN_EMAIL } from '@/lib/loginId'
 import { isDemoAuthMode } from '@/lib/demoAuth'
 import { supabase } from '@/lib/supabase'
 import type { AppRole } from '@/types/database'
@@ -30,17 +31,15 @@ export function SignInPage() {
   const from = (location.state as { from?: string } | null)?.from ?? null
   const demo = isDemoMode || isDemoAuthMode()
 
-  const [email, setEmail] = useState(
-    demo ? 'roshanalikhan2002@gmail.com' : '',
-  )
+  const [loginId, setLoginId] = useState(demo ? PRIMARY_ADMIN_EMAIL : '')
   const [password, setPassword] = useState(demo ? 'demo1234' : '')
   const [submitting, setSubmitting] = useState(false)
 
   async function resolveDashboard(): Promise<string> {
     if (demo) {
-      const lower = email.toLowerCase()
-      if (lower.includes('teacher')) return '/teacher'
-      if (lower.includes('student')) return '/student'
+      const lower = loginId.toLowerCase()
+      if (lower.includes('teacher') || lower.includes('tch')) return '/teacher'
+      if (lower.includes('student') || lower.includes('stu')) return '/student'
       return '/admin'
     }
     const {
@@ -58,8 +57,8 @@ export function SignInPage() {
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
-    if (!email.trim()) {
-      toast.error(t('auth.emailRequired'))
+    if (!loginId.trim()) {
+      toast.error(t('auth.loginIdRequired'))
       return
     }
     if (!password) {
@@ -69,7 +68,7 @@ export function SignInPage() {
 
     setSubmitting(true)
     try {
-      await signIn(email.trim(), password)
+      await signIn(loginId.trim(), password)
       toast.success(t('auth.loginSuccess'))
       const dest = from || (await resolveDashboard())
       navigate(dest, { replace: true })
@@ -111,36 +110,31 @@ export function SignInPage() {
         <Card>
           <CardHeader>
             <CardTitle>{t('auth.loginTitle')}</CardTitle>
-            <CardDescription>{t('auth.loginSubtitle')}</CardDescription>
+            <CardDescription>{t('auth.loginIdSubtitle')}</CardDescription>
           </CardHeader>
           <form onSubmit={(e) => void onSubmit(e)}>
             <CardContent className="space-y-4">
+              <p className="rounded-md border border-gold/40 bg-gold-soft/50 px-3 py-2 text-sm text-navy">
+                {t('auth.adminAssignsCredentials')}
+              </p>
               {demo ? (
-                <p className="rounded-md border border-gold/40 bg-gold-soft/50 px-3 py-2 text-sm text-navy">
+                <p className="rounded-md border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
                   {t('auth.demoModeNotice')}
                 </p>
               ) : null}
               <div className="space-y-2">
-                <Label htmlFor="email">{t('auth.email')}</Label>
+                <Label htmlFor="loginId">{t('auth.loginId')}</Label>
                 <Input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="loginId"
+                  autoComplete="username"
+                  placeholder={t('auth.loginIdPlaceholder')}
+                  value={loginId}
+                  onChange={(e) => setLoginId(e.target.value)}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <div className="flex items-center justify-between gap-2">
-                  <Label htmlFor="password">{t('auth.password')}</Label>
-                  <Link
-                    to="/auth/forgot-password"
-                    className="text-xs font-medium text-navy underline-offset-4 hover:underline"
-                  >
-                    {t('auth.forgotPassword')}
-                  </Link>
-                </div>
+                <Label htmlFor="password">{t('auth.password')}</Label>
                 <PasswordInput
                   id="password"
                   autoComplete="current-password"
@@ -193,13 +187,7 @@ export function SignInPage() {
               ) : null}
 
               <p className="text-center text-sm text-muted-foreground">
-                {t('auth.noAccount')}{' '}
-                <Link
-                  to="/auth/sign-up"
-                  className="font-medium text-navy underline-offset-4 hover:underline"
-                >
-                  {t('auth.signUp')}
-                </Link>
+                {t('auth.passwordResetAdminOnly')}
               </p>
               <Link
                 to="/"

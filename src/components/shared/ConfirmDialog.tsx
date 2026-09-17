@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   AlertDialog,
@@ -20,6 +21,7 @@ interface ConfirmDialogProps {
   onConfirm: () => void
   destructive?: boolean
   loading?: boolean
+  children?: ReactNode
 }
 
 function ConfirmDialog({
@@ -32,6 +34,7 @@ function ConfirmDialog({
   onConfirm,
   destructive = false,
   loading = false,
+  children,
 }: ConfirmDialogProps) {
   const { t } = useTranslation()
 
@@ -42,10 +45,11 @@ function ConfirmDialog({
           <AlertDialogTitle>
             {title ?? t('common.confirmAction')}
           </AlertDialogTitle>
-          <AlertDialogDescription>
-            {description ?? t('common.cannotUndo')}
-          </AlertDialogDescription>
+          {description ? (
+            <AlertDialogDescription>{description}</AlertDialogDescription>
+          ) : null}
         </AlertDialogHeader>
+        {children}
         <AlertDialogFooter>
           <AlertDialogCancel disabled={loading}>
             {cancelLabel ?? t('common.actions.cancel')}

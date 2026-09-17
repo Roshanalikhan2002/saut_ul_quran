@@ -1,15 +1,7 @@
-import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
-import { useAuth } from '@/contexts/AuthContext'
 import { APP_NAME } from '@/lib/constants'
-import { isDemoMode } from '@/lib/dataMode'
-import { supabase } from '@/lib/supabase'
-import { toError } from '@/lib/errors'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Card,
   CardContent,
@@ -20,41 +12,12 @@ import {
 } from '@/components/ui/card'
 import { LanguageSwitcher } from '@/components/ui/language-switcher'
 
+/**
+ * Public self-service password reset is disabled for teachers/students.
+ * Only admin can reset passwords from Admin → Users.
+ */
 export function ForgotPasswordPage() {
   const { t } = useTranslation()
-  const { isDemoMode: authDemo } = useAuth()
-  const demo = authDemo || isDemoMode()
-
-  const [email, setEmail] = useState('')
-  const [submitting, setSubmitting] = useState(false)
-  const [sent, setSent] = useState(false)
-
-  async function onSubmit(e: FormEvent) {
-    e.preventDefault()
-    if (!email.trim()) {
-      toast.error(t('auth.emailRequired'))
-      return
-    }
-
-    if (demo) {
-      toast.message(t('auth.resetNeedsSupabase'))
-      return
-    }
-
-    setSubmitting(true)
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: `${window.location.origin}/auth/update-password`,
-      })
-      if (error) throw error
-      setSent(true)
-      toast.success(t('auth.resetLinkSent'))
-    } catch (err) {
-      toast.error(toError(err).message || t('auth.resetFailed'))
-    } finally {
-      setSubmitting(false)
-    }
-  }
 
   return (
     <div className="relative flex min-h-[calc(100vh-8rem)] items-center justify-center px-4 py-12">
@@ -76,52 +39,22 @@ export function ForgotPasswordPage() {
         <Card>
           <CardHeader>
             <CardTitle>{t('auth.resetPassword')}</CardTitle>
-            <CardDescription>{t('auth.resetPasswordSubtitle')}</CardDescription>
+            <CardDescription>{t('auth.passwordResetAdminOnly')}</CardDescription>
           </CardHeader>
-          <form onSubmit={(e) => void onSubmit(e)}>
-            <CardContent className="space-y-4">
-              {demo ? (
-                <p className="rounded-md border border-gold/40 bg-gold-soft/50 px-3 py-2 text-sm text-navy">
-                  {t('auth.resetNeedsSupabase')}
-                </p>
-              ) : null}
-              {sent ? (
-                <p className="text-sm text-muted-foreground">
-                  {t('auth.resetLinkSentDetail')}
-                </p>
-              ) : (
-                <div className="space-y-2">
-                  <Label htmlFor="email">{t('auth.email')}</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    autoComplete="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    disabled={demo}
-                  />
-                </div>
-              )}
-            </CardContent>
-            <CardFooter className="flex flex-col gap-3">
-              {!sent ? (
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={submitting || demo}
-                >
-                  {submitting ? t('auth.sendingReset') : t('auth.sendResetLink')}
-                </Button>
-              ) : null}
-              <Link
-                to="/auth/sign-in"
-                className="text-center text-sm font-medium text-navy underline-offset-4 hover:underline"
-              >
-                {t('auth.backToLogin')}
-              </Link>
-            </CardFooter>
-          </form>
+          <CardContent className="text-sm text-muted-foreground">
+            <p>{t('auth.adminAssignsCredentials')}</p>
+          </CardContent>
+          <CardFooter className="flex flex-col gap-3">
+            <Button asChild className="w-full">
+              <Link to="/auth/sign-in">{t('auth.signIn')}</Link>
+            </Button>
+            <Link
+              to="/"
+              className="text-center text-sm text-muted-foreground hover:text-navy"
+            >
+              {t('nav.home')}
+            </Link>
+          </CardFooter>
         </Card>
       </div>
     </div>

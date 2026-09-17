@@ -74,6 +74,7 @@ export type Database = {
           locale: AppLocale
           bio: string | null
           is_active: boolean
+          login_id: string | null
           created_at: string
           updated_at: string
         }
@@ -87,6 +88,7 @@ export type Database = {
           locale?: AppLocale
           bio?: string | null
           is_active?: boolean
+          login_id?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -100,6 +102,7 @@ export type Database = {
           locale?: AppLocale
           bio?: string | null
           is_active?: boolean
+          login_id?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -2072,6 +2075,10 @@ export type Database = {
       is_group_muted: {
         Args: { p_group_id: string }
         Returns: boolean
+      }
+      resolve_login_email: {
+        Args: { p_login: string }
+        Returns: string
       }
       submit_and_grade_attempt: {
         Args: { p_attempt_id: string }

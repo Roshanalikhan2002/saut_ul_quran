@@ -186,17 +186,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signIn = useCallback(
-    async (email: string, password: string) => {
+    async (loginOrEmail: string, password: string) => {
       if (demoMode) {
-        // Any non-empty credentials work in demo mode; role from email hint or admin.
-        const lower = email.toLowerCase()
+        const { demoAuthenticateLogin } = await import('@/lib/demoStore')
+        const matched = demoAuthenticateLogin(loginOrEmail, password)
+        if (matched) {
+          const state: DemoAuthState = {
+            role: matched.role,
+            email: matched.email,
+            fullName: matched.fullName,
+          }
+          writeDemoAuth(state)
+          applyDemoState(state, { setUser, setSession, setProfile, setRoles })
+          return
+        }
+        // Fallback: any login for quick demo exploration
+        const lower = loginOrEmail.toLowerCase()
         let role: AppRole = 'admin'
-        if (lower.includes('teacher')) role = 'teacher'
-        else if (lower.includes('student')) role = 'student'
+        if (lower.includes('teacher') || lower.includes('tch')) role = 'teacher'
+        else if (lower.includes('student') || lower.includes('stu'))
+          role = 'student'
         const state: DemoAuthState = {
           role,
-          email: email.trim(),
-          fullName: email.split('@')[0] || 'Demo User',
+          email: loginOrEmail.trim(),
+          fullName: loginOrEmail.split('@')[0] || 'Demo User',
         }
         void password
         writeDemoAuth(state)
@@ -204,6 +217,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return
       }
 
+      const { resolveAuthEmail } = await import('@/services/adminUsers')
+      const email = await resolveAuthEmail(loginOrEmail)
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,

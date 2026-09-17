@@ -151,6 +151,8 @@ export interface DemoStoreData {
   preferences: Tables<'user_preferences'>[]
   aboutJamia: Tables<'about_jamia'> | null
   recordedClasses: Tables<'recorded_classes'>[]
+  /** login_id (lowercase) → password (demo only) */
+  credentials: Record<string, string>
 }
 
 const FIXED = {
@@ -199,7 +201,7 @@ function buildSeed(): DemoStoreData {
 
   const teacherProfile: DemoProfile = {
     id: FIXED.teacherProfileId,
-    email: 'teacher@demo.local',
+    email: 'tch-001@suq.local',
     full_name: 'Demo Teacher',
     full_name_ur: 'ڈیمو استاد',
     avatar_url: null,
@@ -207,13 +209,14 @@ function buildSeed(): DemoStoreData {
     locale: 'en',
     bio: 'Sample teacher for local demo.',
     is_active: true,
+    login_id: 'tch-001',
     created_at: now,
     updated_at: now,
   }
 
   const studentProfile: DemoProfile = {
     id: FIXED.studentProfileId,
-    email: 'student@demo.local',
+    email: 'stu-001@suq.local',
     full_name: 'Demo Student',
     full_name_ur: 'ڈیمو طالب علم',
     avatar_url: null,
@@ -221,20 +224,22 @@ function buildSeed(): DemoStoreData {
     locale: 'en',
     bio: 'Sample student for local demo.',
     is_active: true,
+    login_id: 'stu-001',
     created_at: now,
     updated_at: now,
   }
 
   const adminProfile: DemoProfile = {
     id: FIXED.adminProfileId,
-    email: 'admin@demo.local',
-    full_name: 'Demo Admin',
-    full_name_ur: 'ڈیمو ایڈمن',
+    email: 'fehmidataj27@gmail.com',
+    full_name: 'Jamia Admin',
+    full_name_ur: 'جامعہ ایڈمن',
     avatar_url: null,
     phone: null,
     locale: 'en',
-    bio: 'Sample admin for local demo.',
+    bio: 'Primary admin account.',
     is_active: true,
+    login_id: null,
     created_at: now,
     updated_at: now,
   }
@@ -832,6 +837,11 @@ function buildSeed(): DemoStoreData {
     preferences: [],
     aboutJamia: null,
     recordedClasses: [],
+    credentials: {
+      'tch-001': 'demo1234',
+      'stu-001': 'demo1234',
+      'fehmidataj27@gmail.com': 'demo1234',
+    },
   }
 }
 
@@ -890,6 +900,7 @@ function normalizeStore(data: DemoStoreData): DemoStoreData {
     hifzDaily: data.hifzDaily ?? [],
     tests: data.tests ?? [],
     testAssignments: data.testAssignments ?? [],
+    credentials: data.credentials ?? {},
   }
 }
 
@@ -1123,6 +1134,7 @@ export function demoListStudents(): DemoStudent[] {
         locale: 'en' as const,
         bio: null,
         is_active: true,
+        login_id: null,
         created_at: s.created_at,
         updated_at: s.updated_at,
       } satisfies DemoProfile),
@@ -1161,6 +1173,117 @@ export function demoPromoteToRole(
       })
     }
   })
+}
+
+export function demoCreateProvisionedUser(input: {
+  loginId: string
+  password: string
+  fullName: string
+  role: 'teacher' | 'student'
+}): {
+  userId: string
+  loginId: string
+  email: string
+  role: 'teacher' | 'student'
+} {
+  const loginId = input.loginId.trim().toLowerCase()
+  const email = `${loginId}@suq.local`
+  const userId = id(`demo-${input.role}`)
+  const now = nowIso()
+
+  mutateDemoStore((store) => {
+    if (
+      store.profiles.some(
+        (p) => p.login_id && p.login_id.toLowerCase() === loginId,
+      )
+    ) {
+      throw new Error('Login ID already exists')
+    }
+    store.profiles.push({
+      id: userId,
+      email,
+      full_name: input.fullName || loginId,
+      full_name_ur: null,
+      avatar_url: null,
+      phone: null,
+      locale: 'en',
+      bio: null,
+      is_active: true,
+      login_id: loginId,
+      created_at: now,
+      updated_at: now,
+    })
+    store.userRoles = store.userRoles.filter((r) => r.user_id !== userId)
+    store.userRoles.push({
+      id: id('demo-role'),
+      user_id: userId,
+      role: input.role,
+      granted_by: FIXED.adminProfileId,
+      granted_at: now,
+    })
+    if (input.role === 'student') {
+      store.students.push({
+        id: id('demo-stu'),
+        profile_id: userId,
+        student_code: loginId.toUpperCase(),
+        guardian_name: null,
+        guardian_phone: null,
+        date_of_birth: null,
+        gender: null,
+        address: null,
+        notes: 'Provisioned by admin (demo)',
+        joined_at: now,
+        created_at: now,
+        updated_at: now,
+      })
+    }
+    store.credentials[loginId] = input.password
+  })
+
+  return { userId, loginId, email, role: input.role }
+}
+
+export function demoResetUserPassword(userId: string, password: string): void {
+  mutateDemoStore((store) => {
+    const profile = store.profiles.find((p) => p.id === userId)
+    if (!profile?.login_id && !profile?.email) {
+      throw new Error('User not found')
+    }
+    const key = (profile.login_id || profile.email || '').toLowerCase()
+    store.credentials[key] = password
+  })
+}
+
+/** Demo login check for admin-provisioned IDs. */
+export function demoAuthenticateLogin(
+  loginOrEmail: string,
+  password: string,
+): { role: AppRole; email: string; fullName: string } | null {
+  const store = getDemoStore()
+  const raw = loginOrEmail.trim().toLowerCase()
+  const profile = store.profiles.find(
+    (p) =>
+      (p.login_id && p.login_id.toLowerCase() === raw) ||
+      (p.email && p.email.toLowerCase() === raw) ||
+      (p.email && p.email.toLowerCase() === `${raw}@suq.local`),
+  )
+  if (!profile) return null
+  const key = (profile.login_id || profile.email || '').toLowerCase()
+  const expected = store.credentials[key]
+  if (!expected || expected !== password) return null
+  const roles = store.userRoles
+    .filter((r) => r.user_id === profile.id)
+    .map((r) => r.role)
+  const role: AppRole = roles.includes('admin')
+    ? 'admin'
+    : roles.includes('teacher')
+      ? 'teacher'
+      : 'student'
+  return {
+    role,
+    email: profile.email || key,
+    fullName: profile.full_name || key,
+  }
 }
 
 export function demoDemoteFromRole(userId: string, role: AppRole): void {

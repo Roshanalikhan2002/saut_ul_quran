@@ -87,6 +87,7 @@ export function buildDemoProfile(user: User, state: DemoAuthState): DemoProfile 
     is_active: true,
     created_at: now,
     updated_at: now,
+    login_id: state.email.includes('@') ? null : state.email.toLowerCase(),
   }
 }
 
