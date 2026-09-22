@@ -153,10 +153,19 @@ export function AdminUsersPage() {
       error={error}
       onRetry={() => void load()}
     >
-      <form
-        onSubmit={(e) => void onCreate(e)}
-        className="mb-8 grid gap-3 rounded-xl border border-border bg-card p-4 sm:grid-cols-2 lg:grid-cols-5"
-      >
+      <section className="mb-8 space-y-3">
+        <div>
+          <h2 className="font-display text-lg font-semibold text-navy">
+            {t('admin.createUser')}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {t('admin.createUserHint')}
+          </p>
+        </div>
+        <form
+          onSubmit={(e) => void onCreate(e)}
+          className="grid gap-3 rounded-xl border border-border bg-card p-4 sm:grid-cols-2 lg:grid-cols-5"
+        >
         <div className="space-y-1.5 sm:col-span-2 lg:col-span-1">
           <Label htmlFor="prov-name">{t('common.name')}</Label>
           <Input
@@ -172,7 +181,7 @@ export function AdminUsersPage() {
             id="prov-login"
             value={loginId}
             onChange={(e) => setLoginId(e.target.value)}
-            placeholder="STU-001"
+            placeholder="TCH-001"
             required
           />
         </div>
@@ -210,10 +219,8 @@ export function AdminUsersPage() {
             {creating ? t('common.loading') : t('admin.createUser')}
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground sm:col-span-2 lg:col-span-5">
-          {t('admin.createUserHint')}
-        </p>
-      </form>
+        </form>
+      </section>
 
       <div className="mb-4 flex items-center gap-2">
         <div className="relative max-w-sm flex-1">
