@@ -784,6 +784,7 @@
     "usersProvisionSubtitle": "Create teachers/students with a User ID + password. Only admin can reset passwords.",
     "searchUsers": "Search by name, login ID, email, or role…",
     "createUser": "Create user",
+    "createUsersFirst": "First create the student/teacher login under Admin → Users & roles (User ID + password). Then you can enroll or award here.",
     "createUserHint": "No personal email needed. Login ID example: STU-012 or TCH-03. Share ID + password with the user.",
     "userCreated": "Created {{role}} — login ID: {{loginId}}",
     "resetPassword": "Reset password",

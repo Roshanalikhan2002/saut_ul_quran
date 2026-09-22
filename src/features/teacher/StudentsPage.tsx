@@ -161,18 +161,33 @@ export function TeacherStudentsPage() {
       onRetry={() => void load()}
       empty={!loading && !error && students.length === 0}
       emptyTitle={t('common.noData')}
-      emptyDescription={t('auth.studentsGetCredentials')}
+      emptyDescription={t('admin.createUsersFirst')}
       actions={
         <div className="flex flex-wrap gap-2">
           <Button
             type="button"
             variant="outline"
-            onClick={() => setAwardOpen(true)}
+            onClick={() => {
+              if (students.length === 0) {
+                toast.message(t('admin.createUsersFirst'))
+                return
+              }
+              setAwardOpen(true)
+            }}
           >
             <Medal className="h-4 w-4" />
             {t('gamification.award')}
           </Button>
-          <Button type="button" onClick={() => setEnrollOpen(true)}>
+          <Button
+            type="button"
+            onClick={() => {
+              if (students.length === 0) {
+                toast.message(t('admin.createUsersFirst'))
+                return
+              }
+              setEnrollOpen(true)
+            }}
+          >
             <UserPlus className="h-4 w-4" />
             {t('courses.enrollStudent')}
           </Button>

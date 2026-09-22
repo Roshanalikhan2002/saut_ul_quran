@@ -46,8 +46,15 @@ export function ModuleShell({
       {!loading && !resolvedError && empty ? (
         <EmptyState title={emptyTitle} description={emptyDescription} />
       ) : null}
-      {!loading && !resolvedError && !empty ? (
-        <div className="min-w-0 max-w-full">{children}</div>
+      {/* Keep children mounted when empty so Dialogs/portals in pages still work */}
+      {!loading && !resolvedError ? (
+        <div
+          className={
+            empty ? 'hidden' : 'min-w-0 max-w-full'
+          }
+        >
+          {children}
+        </div>
       ) : null}
     </div>
   )
