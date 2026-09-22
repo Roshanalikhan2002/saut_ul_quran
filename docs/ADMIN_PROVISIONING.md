@@ -1,78 +1,78 @@
 # Admin user provisioning (login ID + password)
 
-Teachers and students **do not need personal emails**.
+**One admin only:** `fehmidataj27@gmail.com`  
+Teachers/students **do not need personal emails**.
 
 ## Model
 
 | Who | How they log in |
 |-----|-----------------|
-| Admin | Real email: `fehmidataj27@gmail.com` + password |
+| Admin (only 1) | `fehmidataj27@gmail.com` + password |
 | Teacher / Student | Admin-assigned **User ID** (e.g. `STU-001`, `TCH-02`) + password |
 
 Behind the scenes, User IDs map to `userid@suq.local` in Supabase Auth.
 
-Only **admin** can:
+Only **that admin** can:
 - Create teacher/student accounts (User ID + password)
 - Reset passwords
+- See the user list in Admin → Users & roles
 
-## 1. SQL migration
+Public self-signup is closed. Password reset by email is closed.
 
-Run in Supabase SQL Editor:
+## 1. SQL migrations (new project)
 
-`supabase/migrations/009_login_id_admin_provisioning.sql`
+In Supabase SQL Editor, run **in order** (skip `005`):
+
+1. `001_schema.sql`
+2. `002_rls.sql`
+3. `003_storage.sql`
+4. `004_seed.sql` (optional sample courses)
+5. `006_test_attempt_expires.sql`
+6. `007_security_hardening.sql`
+7. `008_auth_helpers.sql`
+8. `009_login_id_admin_provisioning.sql`
+9. `010_single_admin.sql`
 
 ## 2. Create primary admin (once)
 
 1. Supabase → Authentication → Users → **Add user**
    - Email: `fehmidataj27@gmail.com`
-   - Password: (choose securely)
+   - Password: (secure)
    - Auto-confirm: **ON**
-2. Copy user UUID
-3. SQL:
+2. Run `supabase/sql/promote_primary_admin.sql`  
+   (or re-run `010_single_admin.sql`)
 
-```sql
-INSERT INTO public.user_roles (user_id, role)
-VALUES ('PASTE_ADMIN_UUID', 'admin')
-ON CONFLICT (user_id, role) DO NOTHING;
-
--- optional: remove default student role
-DELETE FROM public.user_roles
-WHERE user_id = 'PASTE_ADMIN_UUID' AND role = 'student';
-```
-
-## 3. Deploy Edge Function (required for create/reset on production)
+## 3. Deploy Edge Function (create/reset users)
 
 ```bash
-# Install Supabase CLI, then from project root:
 supabase login
-supabase link --project-ref hvxgfgrsukulvirfnfpp
+supabase link --project-ref sgdohxojpjirwfnpyrpk
 supabase functions deploy admin-manage-user
 ```
 
-Service role is injected automatically by Supabase for Edge Functions — **never** put it in Vite/`VITE_*` env.
+Never put the service role key in `VITE_*` / Vercel frontend env.
 
-## 4. App env
+## 4. App + Vercel env (**Config** type, not Secret)
 
 ```env
 VITE_DEMO_MODE=false
-VITE_SUPABASE_URL=https://hvxgfgrsukulvirfnfpp.supabase.co
-VITE_SUPABASE_ANON_KEY=your_publishable_key
+VITE_SUPABASE_URL=https://sgdohxojpjirwfnpyrpk.supabase.co
+VITE_SUPABASE_ANON_KEY=your_publishable_key_from_Settings_API
 ```
 
-Same vars on Vercel.
+Redeploy with **Build Cache OFF**.
 
-## 5. Admin workflow in the app
+Auth → URL Configuration:
+- Site URL: `https://saut-ul-quran.vercel.app`
+- Redirect: `https://saut-ul-quran.vercel.app/**`
 
-1. Sign in as `fehmidataj27@gmail.com`
-2. **Admin → Users & roles**
-3. Create user: name + User ID + role (teacher/student) + password
-4. Share **User ID + password** with that person (WhatsApp/print)
-5. Use **Reset password** on any user when needed
+## 5. Daily admin workflow
 
-## 6. User login
+1. Sign in as `fehmidataj27@gmail.com` → opens **Admin** panel
+2. **Users & roles** → create teacher/student (User ID + password)
+3. Share ID + password with that person
+4. **Reset password** only from this list
 
-Sign-in field accepts:
-- Admin email, or
-- Assigned User ID (`STU-001`)
+## 6. Teacher/student login
 
-No public self-signup for teachers/students.
+Sign-in field: assigned User ID (`STU-001`) — not a personal Gmail.

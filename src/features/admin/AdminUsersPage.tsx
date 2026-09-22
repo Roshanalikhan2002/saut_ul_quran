@@ -280,7 +280,8 @@ export function AdminUsersPage() {
                   <SelectValue placeholder={t('admin.promote')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {(['student', 'teacher', 'admin'] as AppRole[]).map((r) => (
+                  {/* Only one jamia admin (fehmidataj27@gmail.com) — never promote others to admin */}
+                  {(['student', 'teacher'] as AppRole[]).map((r) => (
                     <SelectItem
                       key={r}
                       value={r}
