@@ -1681,16 +1681,647 @@ export function demoListTestAssignments(
     }))
 }
 
+export function demoCreateTest(input: {
+  titleEn: string
+  titleUr?: string | null
+  descriptionEn?: string | null
+  descriptionUr?: string | null
+  courseId?: string | null
+  durationMinutes?: number | null
+  passingScore?: number
+  maxAttempts?: number
+  status?: DemoTest['status']
+  isPublished?: boolean
+  createdBy?: string | null
+}): DemoTest {
+  const now = nowIso()
+  const row: DemoTest = {
+    id: id('demo-test'),
+    title_en: input.titleEn,
+    title_ur: input.titleUr ?? null,
+    description_en: input.descriptionEn ?? null,
+    description_ur: input.descriptionUr ?? null,
+    course_id: input.courseId ?? null,
+    duration_minutes: input.durationMinutes ?? null,
+    passing_score: input.passingScore ?? 50,
+    max_attempts: input.maxAttempts ?? 1,
+    status: input.status ?? 'draft',
+    is_published: input.isPublished ?? false,
+    created_by: input.createdBy ?? null,
+    created_at: now,
+    updated_at: now,
+  }
+  mutateDemoStore((store) => {
+    store.tests.unshift(row)
+  })
+  return row
+}
+
+export function demoGetTest(testId: string): DemoTest | null {
+  return getDemoStore().tests.find((t) => t.id === testId) ?? null
+}
+
+export function demoAssignTest(input: {
+  testId: string
+  studentId: string
+  assignedBy?: string | null
+  dueAt?: string | null
+}): DemoTestAssignment {
+  const now = nowIso()
+  const row: DemoTestAssignment = {
+    id: id('demo-tassign'),
+    test_id: input.testId,
+    student_id: input.studentId,
+    assigned_by: input.assignedBy ?? null,
+    assigned_at: now,
+    due_at: input.dueAt ?? null,
+    status: 'assigned',
+  }
+  mutateDemoStore((store) => {
+    store.testAssignments.push(row)
+  })
+  return row
+}
+
+export function demoCreateEnrollment(
+  input: TablesInsert<'enrollments'>,
+): DemoEnrollment {
+  const now = nowIso()
+  const row: DemoEnrollment = {
+    id: input.id ?? id('demo-enroll'),
+    course_id: input.course_id,
+    student_id: input.student_id,
+    status: input.status ?? 'active',
+    enrolled_by: input.enrolled_by ?? null,
+    enrolled_at: input.enrolled_at ?? now,
+    completed_at: input.completed_at ?? null,
+    notes: input.notes ?? null,
+  }
+  mutateDemoStore((store) => {
+    store.enrollments.push(row)
+  })
+  return row
+}
+
+export function demoUpdateEnrollment(
+  enrollmentId: string,
+  patch: Partial<DemoEnrollment>,
+): DemoEnrollment {
+  let updated: DemoEnrollment | null = null
+  mutateDemoStore((store) => {
+    const idx = store.enrollments.findIndex((e) => e.id === enrollmentId)
+    if (idx < 0) throw new Error('Enrollment not found')
+    store.enrollments[idx] = { ...store.enrollments[idx]!, ...patch }
+    updated = store.enrollments[idx]!
+  })
+  return updated!
+}
+
+export function demoCreateAnnouncement(
+  input: TablesInsert<'announcements'>,
+): DemoAnnouncement {
+  const now = nowIso()
+  const row: DemoAnnouncement = {
+    id: input.id ?? id('demo-ann'),
+    course_id: input.course_id ?? null,
+    group_id: input.group_id ?? null,
+    title_en: input.title_en,
+    title_ur: input.title_ur ?? null,
+    body_en: input.body_en,
+    body_ur: input.body_ur ?? null,
+    published_by: input.published_by ?? null,
+    published_at: input.published_at ?? now,
+    is_pinned: input.is_pinned ?? false,
+    is_published: input.is_published ?? true,
+    created_at: input.created_at ?? now,
+    updated_at: input.updated_at ?? now,
+  }
+  mutateDemoStore((store) => {
+    store.announcements.push(row)
+  })
+  return row
+}
+
+export function demoUpdateAnnouncement(
+  announcementId: string,
+  patch: Partial<DemoAnnouncement>,
+): DemoAnnouncement {
+  let updated: DemoAnnouncement | null = null
+  mutateDemoStore((store) => {
+    const idx = store.announcements.findIndex((a) => a.id === announcementId)
+    if (idx < 0) throw new Error('Announcement not found')
+    store.announcements[idx] = {
+      ...store.announcements[idx]!,
+      ...patch,
+      updated_at: patch.updated_at ?? nowIso(),
+    }
+    updated = store.announcements[idx]!
+  })
+  return updated!
+}
+
+export function demoDeleteAnnouncement(announcementId: string): void {
+  mutateDemoStore((store) => {
+    store.announcements = store.announcements.filter(
+      (a) => a.id !== announcementId,
+    )
+  })
+}
+
+export function demoCreateAttendanceSession(
+  input: TablesInsert<'attendance_sessions'>,
+): Tables<'attendance_sessions'> {
+  const now = nowIso()
+  const row: Tables<'attendance_sessions'> = {
+    id: input.id ?? id('demo-att-sess'),
+    course_id: input.course_id,
+    teacher_id: input.teacher_id ?? null,
+    session_date: input.session_date ?? now.slice(0, 10),
+    title: input.title ?? null,
+    notes: input.notes ?? null,
+    created_at: input.created_at ?? now,
+    updated_at: input.updated_at ?? now,
+  }
+  mutateDemoStore((store) => {
+    store.attendanceSessions.push(row)
+  })
+  return row
+}
+
+export function demoMarkAttendanceRecords(
+  sessionId: string,
+  records: Array<{
+    studentId: string
+    status: Tables<'attendance_records'>['status']
+    notes?: string | null
+    markedBy?: string | null
+  }>,
+): Tables<'attendance_records'>[] {
+  const now = nowIso()
+  const result: Tables<'attendance_records'>[] = []
+  mutateDemoStore((store) => {
+    for (const r of records) {
+      const existing = store.attendanceRecords.findIndex(
+        (row) =>
+          row.session_id === sessionId && row.student_id === r.studentId,
+      )
+      const row: Tables<'attendance_records'> = {
+        id:
+          existing >= 0
+            ? store.attendanceRecords[existing]!.id
+            : id('demo-att-rec'),
+        session_id: sessionId,
+        student_id: r.studentId,
+        status: r.status,
+        notes: r.notes ?? null,
+        marked_by: r.markedBy ?? null,
+        marked_at: now,
+      }
+      if (existing >= 0) store.attendanceRecords[existing] = row
+      else store.attendanceRecords.push(row)
+      result.push(row)
+    }
+  })
+  return result
+}
+
+export function demoListAttendanceSessions(filters?: {
+  courseId?: string
+  dateFrom?: string
+  dateTo?: string
+  studentId?: string
+}): Array<
+  Tables<'attendance_sessions'> & {
+    courses: DemoCourse
+    attendance_records: Array<
+      Tables<'attendance_records'> & { profiles: DemoProfile | null }
+    >
+  }
+> {
+  const store = getDemoStore()
+  const courses = demoListCourses()
+  let sessions = store.attendanceSessions.slice()
+  if (filters?.courseId) {
+    sessions = sessions.filter((s) => s.course_id === filters.courseId)
+  }
+  if (filters?.dateFrom) {
+    sessions = sessions.filter((s) => s.session_date >= filters.dateFrom!)
+  }
+  if (filters?.dateTo) {
+    sessions = sessions.filter((s) => s.session_date <= filters.dateTo!)
+  }
+  sessions = sessions.sort((a, b) =>
+    b.session_date.localeCompare(a.session_date),
+  )
+
+  return sessions
+    .map((s) => {
+      let records = store.attendanceRecords
+        .filter((r) => r.session_id === s.id)
+        .map((r) => ({
+          ...r,
+          profiles: store.profiles.find((p) => p.id === r.student_id) ?? null,
+        }))
+      if (filters?.studentId) {
+        records = records.filter((r) => r.student_id === filters.studentId)
+      }
+      const course =
+        courses.find((c) => c.id === s.course_id) ??
+        ({
+          id: s.course_id,
+          slug: 'unknown',
+          cover_image_url: null,
+          difficulty: null,
+          estimated_hours: null,
+          is_published: false,
+          sort_order: 0,
+          created_by: null,
+          created_at: s.created_at,
+          updated_at: s.updated_at,
+          course_translations: [],
+        } satisfies DemoCourse)
+      return { ...s, courses: course, attendance_records: records }
+    })
+    .filter((s) => !filters?.studentId || s.attendance_records.length > 0)
+}
+
+export function demoListAttendanceRecords(
+  studentProfileId: string,
+  options?: { courseId?: string; limit?: number },
+): Array<
+  Tables<'attendance_records'> & {
+    attendance_sessions: Tables<'attendance_sessions'> & {
+      courses: DemoCourse
+    }
+  }
+> {
+  const store = getDemoStore()
+  const courses = demoListCourses()
+  let rows = store.attendanceRecords.filter(
+    (r) => r.student_id === studentProfileId,
+  )
+  rows = rows.sort((a, b) => b.marked_at.localeCompare(a.marked_at))
+  if (options?.limit) rows = rows.slice(0, options.limit)
+
+  return rows
+    .map((r) => {
+      const session = store.attendanceSessions.find(
+        (s) => s.id === r.session_id,
+      )
+      if (!session) return null
+      if (options?.courseId && session.course_id !== options.courseId) {
+        return null
+      }
+      const course =
+        courses.find((c) => c.id === session.course_id) ??
+        ({
+          id: session.course_id,
+          slug: 'unknown',
+          cover_image_url: null,
+          difficulty: null,
+          estimated_hours: null,
+          is_published: false,
+          sort_order: 0,
+          created_by: null,
+          created_at: session.created_at,
+          updated_at: session.updated_at,
+          course_translations: [],
+        } satisfies DemoCourse)
+      return {
+        ...r,
+        attendance_sessions: { ...session, courses: course },
+      }
+    })
+    .filter((r): r is NonNullable<typeof r> => r != null)
+}
+
 export function demoListHifzProgress(
-  _studentProfileId: string,
-): Tables<'hifz_progress'>[] {
-  return []
+  studentProfileId: string,
+): Array<Tables<'hifz_progress'> & { surahs: DemoSurah | null }> {
+  const store = getDemoStore()
+  return store.hifzProgress
+    .filter((p) => p.student_id === studentProfileId)
+    .sort((a, b) => b.updated_at.localeCompare(a.updated_at))
+    .map((p) => ({
+      ...p,
+      surahs: store.surahs.find((s) => s.id === p.surah_id) ?? null,
+    }))
+}
+
+export function demoUpsertHifzProgress(
+  input: TablesInsert<'hifz_progress'>,
+): Tables<'hifz_progress'> {
+  const now = nowIso()
+  let row: Tables<'hifz_progress'> | null = null
+  mutateDemoStore((store) => {
+    if (input.id) {
+      const idx = store.hifzProgress.findIndex((p) => p.id === input.id)
+      if (idx >= 0) {
+        store.hifzProgress[idx] = {
+          ...store.hifzProgress[idx]!,
+          surah_id: input.surah_id,
+          ayah_from: input.ayah_from,
+          ayah_to: input.ayah_to,
+          status: input.status ?? store.hifzProgress[idx]!.status,
+          notes: input.notes ?? null,
+          assigned_by: input.assigned_by ?? null,
+          updated_at: now,
+        }
+        row = store.hifzProgress[idx]!
+        return
+      }
+    }
+    row = {
+      id: input.id ?? id('demo-hifz-p'),
+      student_id: input.student_id,
+      surah_id: input.surah_id,
+      ayah_from: input.ayah_from,
+      ayah_to: input.ayah_to,
+      status: input.status ?? 'in_progress',
+      assigned_by: input.assigned_by ?? null,
+      notes: input.notes ?? null,
+      created_at: input.created_at ?? now,
+      updated_at: now,
+    }
+    store.hifzProgress.push(row)
+  })
+  return row!
+}
+
+export function demoApproveHifzProgress(
+  progressId: string,
+  status: Tables<'hifz_progress'>['status'] = 'memorized',
+  notes?: string | null,
+): Tables<'hifz_progress'> {
+  let updated: Tables<'hifz_progress'> | null = null
+  mutateDemoStore((store) => {
+    const idx = store.hifzProgress.findIndex((p) => p.id === progressId)
+    if (idx < 0) throw new Error('Hifz progress not found')
+    store.hifzProgress[idx] = {
+      ...store.hifzProgress[idx]!,
+      status,
+      notes: notes ?? store.hifzProgress[idx]!.notes,
+      updated_at: nowIso(),
+    }
+    updated = store.hifzProgress[idx]!
+  })
+  return updated!
 }
 
 export function demoListHifzDaily(
-  _studentProfileId: string,
-): Tables<'hifz_daily_records'>[] {
-  return []
+  studentProfileId: string,
+  limit = 60,
+): Array<Tables<'hifz_daily_records'> & { surahs: DemoSurah | null }> {
+  const store = getDemoStore()
+  return store.hifzDaily
+    .filter((r) => r.student_id === studentProfileId)
+    .sort((a, b) => b.record_date.localeCompare(a.record_date))
+    .slice(0, limit)
+    .map((r) => ({
+      ...r,
+      surahs: r.surah_id
+        ? (store.surahs.find((s) => s.id === r.surah_id) ?? null)
+        : null,
+    }))
+}
+
+export function demoUpsertHifzDaily(
+  input: TablesInsert<'hifz_daily_records'>,
+): Tables<'hifz_daily_records'> & { surahs: DemoSurah | null } {
+  const now = nowIso()
+  let rowId = input.id
+  mutateDemoStore((store) => {
+    if (rowId) {
+      const idx = store.hifzDaily.findIndex((r) => r.id === rowId)
+      if (idx >= 0) {
+        store.hifzDaily[idx] = {
+          ...store.hifzDaily[idx]!,
+          ...input,
+          id: rowId,
+          updated_at: now,
+        } as Tables<'hifz_daily_records'>
+        return
+      }
+    }
+    rowId = rowId ?? id('demo-hifz-d')
+    store.hifzDaily.push({
+      id: rowId,
+      student_id: input.student_id,
+      record_date: input.record_date ?? now.slice(0, 10),
+      surah_id: input.surah_id ?? null,
+      ayah_from: input.ayah_from ?? null,
+      ayah_to: input.ayah_to ?? null,
+      pages_revised: input.pages_revised ?? null,
+      quality_rating: input.quality_rating ?? null,
+      teacher_notes: input.teacher_notes ?? null,
+      recorded_by: input.recorded_by ?? null,
+      created_at: input.created_at ?? now,
+      updated_at: now,
+    })
+  })
+  const store = getDemoStore()
+  const row = store.hifzDaily.find((r) => r.id === rowId)!
+  return {
+    ...row,
+    surahs: row.surah_id
+      ? (store.surahs.find((s) => s.id === row.surah_id) ?? null)
+      : null,
+  }
+}
+
+export function demoAwardPoints(
+  input: TablesInsert<'points_ledger'>,
+): DemoPointsEntry {
+  const row: DemoPointsEntry = {
+    id: input.id ?? id('demo-pts'),
+    student_id: input.student_id,
+    points: input.points,
+    reason: input.reason,
+    reference_type: input.reference_type ?? null,
+    reference_id: input.reference_id ?? null,
+    created_by: input.created_by ?? null,
+    created_at: input.created_at ?? nowIso(),
+  }
+  mutateDemoStore((store) => {
+    store.pointsLedger.push(row)
+  })
+  return row
+}
+
+export function demoAwardBadge(input: {
+  studentId: string
+  badgeId: string
+  awardedBy?: string | null
+}): Tables<'student_badges'> {
+  const store = getDemoStore()
+  const existing = store.studentBadges.find(
+    (sb) =>
+      sb.student_id === input.studentId && sb.badge_id === input.badgeId,
+  )
+  if (existing) return existing
+
+  const row: Tables<'student_badges'> = {
+    id: id('demo-sb'),
+    student_id: input.studentId,
+    badge_id: input.badgeId,
+    awarded_at: nowIso(),
+    awarded_by: input.awardedBy ?? null,
+  }
+  mutateDemoStore((s) => {
+    s.studentBadges.push(row)
+  })
+  return row
+}
+
+export function demoGetBadge(badgeId: string): DemoBadge | null {
+  return getDemoStore().badges.find((b) => b.id === badgeId) ?? null
+}
+
+export function demoCreateLiveClass(
+  input: TablesInsert<'live_classes'>,
+): DemoLiveClass {
+  const now = nowIso()
+  const row: DemoLiveClass = {
+    id: input.id ?? id('demo-live'),
+    course_id: input.course_id ?? null,
+    title_en: input.title_en,
+    title_ur: input.title_ur ?? null,
+    description_en: input.description_en ?? null,
+    description_ur: input.description_ur ?? null,
+    scheduled_at: input.scheduled_at,
+    ends_at: input.ends_at ?? null,
+    meeting_url: input.meeting_url ?? null,
+    status: input.status ?? 'scheduled',
+    host_id: input.host_id ?? null,
+    notes: input.notes ?? null,
+    created_at: input.created_at ?? now,
+    updated_at: input.updated_at ?? now,
+  }
+  mutateDemoStore((store) => {
+    store.liveClasses.push(row)
+  })
+  return row
+}
+
+export function demoUpdateLiveClass(
+  liveClassId: string,
+  patch: Partial<DemoLiveClass>,
+): DemoLiveClass {
+  let updated: DemoLiveClass | null = null
+  mutateDemoStore((store) => {
+    const idx = store.liveClasses.findIndex((l) => l.id === liveClassId)
+    if (idx < 0) throw new Error('Live class not found')
+    store.liveClasses[idx] = {
+      ...store.liveClasses[idx]!,
+      ...patch,
+      updated_at: patch.updated_at ?? nowIso(),
+    }
+    updated = store.liveClasses[idx]!
+  })
+  return updated!
+}
+
+export function demoCreateNotification(
+  input: TablesInsert<'notifications'>,
+): DemoNotification {
+  const row: DemoNotification = {
+    id: input.id ?? id('demo-notif'),
+    user_id: input.user_id,
+    type: input.type ?? 'info',
+    title_en: input.title_en,
+    title_ur: input.title_ur ?? null,
+    body_en: input.body_en ?? null,
+    body_ur: input.body_ur ?? null,
+    link: input.link ?? null,
+    is_read: input.is_read ?? false,
+    metadata: input.metadata ?? {},
+    created_at: input.created_at ?? nowIso(),
+  }
+  mutateDemoStore((store) => {
+    store.notifications.push(row)
+  })
+  return row
+}
+
+export function demoGetLessonProgress(
+  studentId: string,
+  lessonId: string,
+): Tables<'lesson_progress'> | null {
+  return (
+    getDemoStore().lessonProgress.find(
+      (p) => p.student_id === studentId && p.lesson_id === lessonId,
+    ) ?? null
+  )
+}
+
+export function demoSaveLessonProgress(input: {
+  studentId: string
+  lessonId: string
+  positionSeconds?: number
+  status?: Tables<'lesson_progress'>['status']
+  percent?: number
+}): Tables<'lesson_progress'> {
+  const now = nowIso()
+  const existing = demoGetLessonProgress(input.studentId, input.lessonId)
+  const progressPercent = Math.min(
+    100,
+    Math.max(0, input.percent ?? existing?.progress_percent ?? 0),
+  )
+  let status: Tables<'lesson_progress'>['status'] =
+    input.status ?? existing?.status ?? 'in_progress'
+  if (progressPercent >= 100) status = 'completed'
+  else if (status === 'not_started' && (input.positionSeconds ?? 0) > 0) {
+    status = 'in_progress'
+  }
+
+  let result: Tables<'lesson_progress'> | null = null
+  mutateDemoStore((store) => {
+    if (existing) {
+      const idx = store.lessonProgress.findIndex((p) => p.id === existing.id)
+      if (idx >= 0) {
+        store.lessonProgress[idx] = {
+          ...store.lessonProgress[idx]!,
+          last_position_seconds:
+            input.positionSeconds ??
+            existing.last_position_seconds ??
+            0,
+          progress_percent: progressPercent,
+          status,
+          updated_at: now,
+          completed_at:
+            status === 'completed' ? (existing.completed_at ?? now) : null,
+        }
+        result = store.lessonProgress[idx]!
+      }
+    } else {
+      result = {
+        id: id('demo-lp'),
+        student_id: input.studentId,
+        lesson_id: input.lessonId,
+        last_position_seconds: input.positionSeconds ?? 0,
+        progress_percent: progressPercent,
+        status,
+        completed_at: status === 'completed' ? now : null,
+        created_at: now,
+        updated_at: now,
+      }
+      store.lessonProgress.push(result)
+    }
+  })
+  return result!
+}
+
+export function demoListCourseLessonProgress(
+  studentId: string,
+  courseId: string,
+): Tables<'lesson_progress'>[] {
+  const store = getDemoStore()
+  const lessonIds = new Set(
+    store.lessons.filter((l) => l.course_id === courseId).map((l) => l.id),
+  )
+  return store.lessonProgress.filter(
+    (p) => p.student_id === studentId && lessonIds.has(p.lesson_id),
+  )
 }
 
 /** Soft create lesson in demo store. */

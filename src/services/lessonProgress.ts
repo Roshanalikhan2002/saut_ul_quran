@@ -1,4 +1,9 @@
 import { isDemoAuthMode } from '@/lib/demoAuth'
+import {
+  demoGetLessonProgress,
+  demoListCourseLessonProgress,
+  demoSaveLessonProgress,
+} from '@/lib/demoStore'
 import { supabase } from '@/lib/supabase'
 import type {
   LessonProgressStatus,
@@ -25,12 +30,6 @@ export async function getProgress(
   studentId: string,
   lessonIdOrOpts: string | { lessonId?: string; contentId?: string },
 ): Promise<LessonProgress | null> {
-  if (isDemoAuthMode()) {
-    void studentId
-    void lessonIdOrOpts
-    return null
-  }
-
   const lessonId =
     typeof lessonIdOrOpts === 'string'
       ? lessonIdOrOpts
@@ -39,6 +38,10 @@ export async function getProgress(
   if (!lessonId) {
     // contentId alone cannot resolve progress without a lesson join; return null.
     return null
+  }
+
+  if (isDemoAuthMode()) {
+    return demoGetLessonProgress(studentId, lessonId)
   }
 
   const { data, error } = await supabase
@@ -55,6 +58,10 @@ export async function getProgress(
 export async function saveProgress(
   input: SaveProgressInput,
 ): Promise<LessonProgress> {
+  if (isDemoAuthMode()) {
+    return demoSaveLessonProgress(input)
+  }
+
   const existing = await getProgress(input.studentId, input.lessonId)
   const now = new Date().toISOString()
 
@@ -114,9 +121,7 @@ export async function listCourseProgress(
   courseId: string,
 ): Promise<LessonProgress[]> {
   if (isDemoAuthMode()) {
-    void studentId
-    void courseId
-    return []
+    return demoListCourseLessonProgress(studentId, courseId)
   }
 
   const { data: lessons, error: lessonsError } = await supabase

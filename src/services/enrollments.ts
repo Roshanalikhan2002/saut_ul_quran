@@ -1,5 +1,9 @@
 import { isDemoAuthMode } from '@/lib/demoAuth'
-import { demoListEnrollments } from '@/lib/demoStore'
+import {
+  demoCreateEnrollment,
+  demoListEnrollments,
+  demoUpdateEnrollment,
+} from '@/lib/demoStore'
 import { supabase } from '@/lib/supabase'
 import type { EnrollmentStatus, Tables, TablesInsert, TablesUpdate } from '@/types/database'
 
@@ -55,6 +59,10 @@ export async function getEnrollment(
 export async function createEnrollment(
   input: TablesInsert<'enrollments'>,
 ): Promise<Enrollment> {
+  if (isDemoAuthMode()) {
+    return demoCreateEnrollment(input)
+  }
+
   const { data, error } = await supabase
     .from('enrollments')
     .insert(input)
@@ -69,6 +77,10 @@ export async function updateEnrollment(
   id: string,
   patch: TablesUpdate<'enrollments'>,
 ): Promise<Enrollment> {
+  if (isDemoAuthMode()) {
+    return demoUpdateEnrollment(id, patch)
+  }
+
   const { data, error } = await supabase
     .from('enrollments')
     .update(patch)

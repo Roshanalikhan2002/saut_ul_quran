@@ -1,5 +1,12 @@
 import { listStudents, type StudentWithProfile } from '@/services/students'
 import { isDemoAuthMode } from '@/lib/demoAuth'
+import {
+  demoApproveHifzProgress,
+  demoListHifzDaily,
+  demoListHifzProgress,
+  demoUpsertHifzDaily,
+  demoUpsertHifzProgress,
+} from '@/lib/demoStore'
 import { supabase } from '@/lib/supabase'
 import type { HifzStatus, Tables, TablesInsert, TablesUpdate } from '@/types/database'
 
@@ -63,8 +70,7 @@ export async function getProgress(
   studentProfileId: string,
 ): Promise<HifzProgressWithSurah[]> {
   if (isDemoAuthMode()) {
-    void studentProfileId
-    return []
+    return demoListHifzProgress(studentProfileId) as HifzProgressWithSurah[]
   }
 
   const { data, error } = await supabase
@@ -80,6 +86,10 @@ export async function getProgress(
 export async function upsertProgress(
   input: TablesInsert<'hifz_progress'>,
 ): Promise<HifzProgress> {
+  if (isDemoAuthMode()) {
+    return demoUpsertHifzProgress(input)
+  }
+
   if (input.id) {
     const { data, error } = await supabase
       .from('hifz_progress')
@@ -113,6 +123,10 @@ export async function approveProgress(
   status: HifzStatus = 'memorized',
   notes?: string | null,
 ): Promise<HifzProgress> {
+  if (isDemoAuthMode()) {
+    return demoApproveHifzProgress(progressId, status, notes)
+  }
+
   const { data, error } = await supabase
     .from('hifz_progress')
     .update({
@@ -158,6 +172,10 @@ export async function upsertDailyRecord(
     recorded_by: input.recordedBy ?? null,
   }
 
+  if (isDemoAuthMode()) {
+    return withParsedNotes(demoUpsertHifzDaily(payload))
+  }
+
   if (input.id) {
     const { data, error } = await supabase
       .from('hifz_daily_records')
@@ -186,9 +204,9 @@ export async function listDailyRecords(
   limit = 60,
 ): Promise<HifzDailyRecordParsed[]> {
   if (isDemoAuthMode()) {
-    void studentProfileId
-    void limit
-    return []
+    return demoListHifzDaily(studentProfileId, limit).map((row) =>
+      withParsedNotes(row),
+    )
   }
 
   const { data, error } = await supabase

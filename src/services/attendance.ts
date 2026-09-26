@@ -1,5 +1,10 @@
 import { isDemoAuthMode } from '@/lib/demoAuth'
-import { demoGetAttendancePercentage } from '@/lib/demoStore'
+import {
+  demoCreateAttendanceSession,
+  demoListAttendanceRecords,
+  demoListAttendanceSessions,
+  demoMarkAttendanceRecords,
+} from '@/lib/demoStore'
 import { supabase } from '@/lib/supabase'
 import type {
   AttendanceStatus,
@@ -55,6 +60,10 @@ export async function createSession(
     notes: input.notes ?? null,
   }
 
+  if (isDemoAuthMode()) {
+    return demoCreateAttendanceSession(payload)
+  }
+
   const { data, error } = await supabase
     .from('attendance_sessions')
     .insert(payload)
@@ -72,6 +81,18 @@ export async function markRecords(
   markedBy?: string | null,
 ): Promise<AttendanceRecord[]> {
   if (records.length === 0) return []
+
+  if (isDemoAuthMode()) {
+    return demoMarkAttendanceRecords(
+      sessionId,
+      records.map((r) => ({
+        studentId: r.studentId,
+        status: r.status,
+        notes: r.notes,
+        markedBy,
+      })),
+    )
+  }
 
   const rows: TablesInsert<'attendance_records'>[] = records.map((r) => ({
     session_id: sessionId,
@@ -116,8 +137,7 @@ export async function listSessions(filters?: {
   studentId?: string
 }): Promise<AttendanceSessionDetail[]> {
   if (isDemoAuthMode()) {
-    void filters
-    return []
+    return demoListAttendanceSessions(filters) as AttendanceSessionDetail[]
   }
 
   let query = supabase
@@ -155,9 +175,10 @@ export async function getStudentAttendanceHistory(
   options?: { courseId?: string; limit?: number },
 ): Promise<AttendanceRecordWithSession[]> {
   if (isDemoAuthMode()) {
-    void studentProfileId
-    void options
-    return []
+    return demoListAttendanceRecords(
+      studentProfileId,
+      options,
+    ) as AttendanceRecordWithSession[]
   }
 
   let query = supabase
@@ -206,12 +227,6 @@ export async function getAttendancePercentage(
   late: number
   excused: number
 }> {
-  if (isDemoAuthMode()) {
-    void studentProfileId
-    void courseId
-    return demoGetAttendancePercentage()
-  }
-
   const history = await getStudentAttendanceHistory(studentProfileId, {
     courseId,
   })

@@ -1,5 +1,10 @@
 import { isDemoAuthMode } from '@/lib/demoAuth'
-import { demoListAnnouncements } from '@/lib/demoStore'
+import {
+  demoCreateAnnouncement,
+  demoDeleteAnnouncement,
+  demoListAnnouncements,
+  demoUpdateAnnouncement,
+} from '@/lib/demoStore'
 import { supabase } from '@/lib/supabase'
 import type { Tables, TablesInsert, TablesUpdate } from '@/types/database'
 import { listEnrollments } from '@/services/enrollments'
@@ -47,6 +52,21 @@ export async function createAnnouncement(
     is_published = true,
     group_id,
   } = input
+
+  if (isDemoAuthMode()) {
+    return demoCreateAnnouncement({
+      course_id: course_id ?? null,
+      group_id: group_id ?? null,
+      title_en,
+      title_ur: title_ur ?? null,
+      body_en,
+      body_ur: body_ur ?? null,
+      published_by: published_by ?? null,
+      published_at: new Date().toISOString(),
+      is_pinned,
+      is_published,
+    })
+  }
 
   let resolvedGroupId = group_id ?? null
 
@@ -165,6 +185,13 @@ export async function updateAnnouncement(
   id: string,
   patch: TablesUpdate<'announcements'>,
 ): Promise<Announcement> {
+  if (isDemoAuthMode()) {
+    return demoUpdateAnnouncement(id, {
+      ...patch,
+      updated_at: new Date().toISOString(),
+    })
+  }
+
   const { data, error } = await supabase
     .from('announcements')
     .update({ ...patch, updated_at: new Date().toISOString() })
@@ -177,6 +204,11 @@ export async function updateAnnouncement(
 }
 
 export async function deleteAnnouncement(id: string): Promise<void> {
+  if (isDemoAuthMode()) {
+    demoDeleteAnnouncement(id)
+    return
+  }
+
   const { error } = await supabase.from('announcements').delete().eq('id', id)
   if (error) throw error
 }

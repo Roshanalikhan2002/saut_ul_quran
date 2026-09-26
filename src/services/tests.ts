@@ -1,6 +1,6 @@
 import { listEnrollments } from '@/services/enrollments'
 import { isDemoAuthMode } from '@/lib/demoAuth'
-import { demoListTestAssignments, demoListTests } from '@/lib/demoStore'
+import { demoListTestAssignments, demoListTests, demoCreateTest, demoGetTest, demoAssignTest } from '@/lib/demoStore'
 import { supabase } from '@/lib/supabase'
 import type {
   AttemptStatus,
@@ -134,6 +134,12 @@ export async function getTest(
   testId: string,
   options?: { forStudent?: boolean },
 ): Promise<TestWithQuestions | null> {
+  if (isDemoAuthMode()) {
+    const test = demoGetTest(testId)
+    if (!test) return null
+    return { ...test, test_questions: [] }
+  }
+
   const { data, error } = await supabase
     .from('tests')
     .select('*, test_questions(*, test_options(*))')
@@ -156,6 +162,10 @@ export async function getTest(
 }
 
 export async function createTest(input: CreateTestInput): Promise<Test> {
+  if (isDemoAuthMode()) {
+    return demoCreateTest(input)
+  }
+
   const payload: TablesInsert<'tests'> = {
     title_en: input.titleEn,
     title_ur: input.titleUr ?? null,
@@ -327,6 +337,17 @@ export async function assignTest(input: {
 
   if (studentIds.size === 0) {
     throw new Error('No students to assign')
+  }
+
+  if (isDemoAuthMode()) {
+    return [...studentIds].map((studentId) =>
+      demoAssignTest({
+        testId: input.testId,
+        studentId,
+        assignedBy: input.assignedBy,
+        dueAt: input.dueAt,
+      }),
+    )
   }
 
   const rows: TablesInsert<'test_assignments'>[] = [...studentIds].map(

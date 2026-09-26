@@ -1,5 +1,10 @@
 import { isDemoAuthMode } from '@/lib/demoAuth'
-import { demoListMyGroups, demoListUpcomingLive } from '@/lib/demoStore'
+import {
+  demoCreateLiveClass,
+  demoListMyGroups,
+  demoListUpcomingLive,
+  demoUpdateLiveClass,
+} from '@/lib/demoStore'
 import { supabase } from '@/lib/supabase'
 import type {
   LiveClassStatus,
@@ -131,6 +136,10 @@ export async function createLiveClass(
     notes: composeNotes(input.notes, input.groupId, input.groupName),
   }
 
+  if (isDemoAuthMode()) {
+    return demoCreateLiveClass(payload)
+  }
+
   const { data, error } = await supabase
     .from('live_classes')
     .insert(payload)
@@ -156,6 +165,10 @@ export async function updateStatus(
     // keep scheduled_at; meeting may already be open
   }
 
+  if (isDemoAuthMode()) {
+    return demoUpdateLiveClass(id, patch)
+  }
+
   const { data, error } = await supabase
     .from('live_classes')
     .update(patch)
@@ -171,6 +184,13 @@ export async function setMeetingUrl(
   id: string,
   meetingUrl: string,
 ): Promise<LiveClass> {
+  if (isDemoAuthMode()) {
+    return demoUpdateLiveClass(id, {
+      meeting_url: meetingUrl,
+      updated_at: new Date().toISOString(),
+    })
+  }
+
   const { data, error } = await supabase
     .from('live_classes')
     .update({
@@ -189,6 +209,13 @@ export async function updateLiveClass(
   id: string,
   patch: TablesUpdate<'live_classes'>,
 ): Promise<LiveClass> {
+  if (isDemoAuthMode()) {
+    return demoUpdateLiveClass(id, {
+      ...patch,
+      updated_at: new Date().toISOString(),
+    })
+  }
+
   const { data, error } = await supabase
     .from('live_classes')
     .update({ ...patch, updated_at: new Date().toISOString() })

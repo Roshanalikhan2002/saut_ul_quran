@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useAuth } from '@/contexts/AuthContext'
@@ -234,13 +235,14 @@ export function TeacherSettingsPage() {
           <p className="font-medium text-navy">Promote roles</p>
           <p className="mt-1">
             New signups receive the <code>student</code> role by default. To
-            promote a user to teacher or admin, insert into{' '}
-            <code>user_roles</code> in the Supabase SQL editor (admin only),
-            e.g.{' '}
-            <code>
-              insert into user_roles (user_id, role) values
-              (&apos;&lt;uuid&gt;&apos;, &apos;teacher&apos;);
-            </code>
+            promote a user to teacher or admin, use the{' '}
+            <Link
+              to="/admin/users"
+              className="font-medium text-navy underline-offset-2 hover:underline"
+            >
+              Admin Users
+            </Link>{' '}
+            page (admin only).
           </p>
         </section>
       </div>

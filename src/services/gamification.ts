@@ -1,5 +1,8 @@
 import { isDemoAuthMode } from '@/lib/demoAuth'
 import {
+  demoAwardBadge,
+  demoAwardPoints,
+  demoGetBadge,
   demoGetPointsTotal,
   demoListBadges,
   demoListPointsLedger,
@@ -100,13 +103,18 @@ export async function awardPoints(input: {
     reference_id: input.referenceId ?? null,
   }
 
-  const { data, error } = await supabase
-    .from('points_ledger')
-    .insert(payload)
-    .select('*')
-    .single()
-
-  if (error) throw error
+  let data: PointsLedgerEntry
+  if (isDemoAuthMode()) {
+    data = demoAwardPoints(payload)
+  } else {
+    const result = await supabase
+      .from('points_ledger')
+      .insert(payload)
+      .select('*')
+      .single()
+    if (result.error) throw result.error
+    data = result.data
+  }
 
   try {
     await notifyUser({
@@ -130,6 +138,25 @@ export async function awardBadge(input: {
   badgeId: string
   awardedBy?: string | null
 }): Promise<StudentBadge> {
+  if (isDemoAuthMode()) {
+    const data = demoAwardBadge(input)
+    const badge = demoGetBadge(input.badgeId)
+    try {
+      await notifyUser({
+        userId: input.studentId,
+        type: 'badge',
+        titleEn: `Badge earned: ${badge?.name_en ?? 'New badge'}`,
+        titleUr: badge?.name_ur
+          ? `بیج حاصل ہوا: ${badge.name_ur}`
+          : 'نیا بیج',
+        link: '/student/settings',
+      })
+    } catch {
+      /* best-effort */
+    }
+    return data
+  }
+
   const existing = await supabase
     .from('student_badges')
     .select('*')

@@ -1,5 +1,6 @@
 import { isDemoAuthMode } from '@/lib/demoAuth'
 import {
+  demoCreateNotification,
   demoListNotifications,
   demoMarkAllNotificationsRead,
   demoMarkNotificationRead,
@@ -87,6 +88,10 @@ export async function unreadCount(userId: string): Promise<number> {
 export async function createNotification(
   input: TablesInsert<'notifications'>,
 ): Promise<Notification> {
+  if (isDemoAuthMode()) {
+    return demoCreateNotification(input)
+  }
+
   const { data, error } = await supabase
     .from('notifications')
     .insert(input)
