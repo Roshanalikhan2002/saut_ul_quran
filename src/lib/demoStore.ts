@@ -1689,7 +1689,7 @@ export function demoCreateTest(input: {
   courseId?: string | null
   durationMinutes?: number | null
   passingScore?: number
-  maxAttempts?: number
+  maxAttempts?: number | null
   status?: DemoTest['status']
   isPublished?: boolean
   createdBy?: string | null
@@ -1735,7 +1735,6 @@ export function demoAssignTest(input: {
     assigned_by: input.assignedBy ?? null,
     assigned_at: now,
     due_at: input.dueAt ?? null,
-    status: 'assigned',
   }
   mutateDemoStore((store) => {
     store.testAssignments.push(row)
