@@ -571,7 +571,12 @@
     "today": "آج",
     "yesterday": "کل",
     "startChat": "چیٹ شروع کریں",
-    "selectConversation": "گفتگو منتخب کریں"
+    "selectConversation": "گفتگو منتخب کریں",
+    "voiceNote": "وائس نوٹ",
+    "voiceSent": "وائس نوٹ بھیج دیا گیا",
+    "recording": "ریکارڈ ہو رہا ہے… ختم پر اسٹاپ دبائیں",
+    "stopRecording": "ریکارڈنگ روکیں",
+    "micDenied": "مائیک کی اجازت نہیں ملی۔ براؤزر میں مائیک اجازت دیں。"
   },
   "announcements": {
     "title": "اعلانات",
@@ -804,7 +809,12 @@
     "importComplete": "مکمل سیٹ موجود",
     "importSample": "نمونہ / جزوی ڈیٹا",
     "importEmpty": "ابھی کوئی قرآن ریکارڈ نہیں",
-    "importSteps": "امپورٹ کے مراحل"
+    "importSteps": "امپورٹ کے مراحل",
+    "importSampleBtn": "نمونہ امپورٹ کریں",
+    "chooseImportFile": "PDF / فائل منتخب کریں",
+    "downloadSamplePdf": "نمونہ PDF",
+    "importUiHint": "نمونہ امپورٹ کریں، یا سادہ PDF/TXT/JSON اپ لوڈ کریں۔ صرف ایڈمن لکھ سکتا ہے۔",
+    "importSuccess": "{{surahs}} سورت(یں) اور {{ayahs}} آیت(یں) امپورٹ ہو گئیں۔"
   },
   "verify": {
     "title": "سرٹیفکیٹ تصدیق",

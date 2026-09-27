@@ -224,7 +224,9 @@ export async function getMyMembership(
 export async function sendMessage(input: {
   groupId: string
   senderId: string
-  body: string
+  body?: string | null
+  mediaPath?: string | null
+  metadata?: TablesInsert<'group_messages'>['metadata']
 }): Promise<GroupMessage> {
   const membership = await getMyMembership(input.groupId, input.senderId)
   if (membership?.role_in_group === 'muted') {
@@ -243,10 +245,17 @@ export async function sendMessage(input: {
     // Client still attempts insert; RLS rejects non-staff
   }
 
+  const body = (input.body ?? '').trim()
+  if (!body && !input.mediaPath) {
+    throw new Error('Message is empty')
+  }
+
   const payload: TablesInsert<'group_messages'> = {
     group_id: input.groupId,
     sender_id: input.senderId,
-    body: input.body.trim(),
+    body: body || (input.mediaPath ? '🎤 Voice note' : null),
+    media_path: input.mediaPath ?? null,
+    metadata: input.metadata ?? {},
   }
 
   const { data, error } = await supabase

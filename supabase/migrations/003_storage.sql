@@ -14,7 +14,7 @@ VALUES
   ('ayah-audio', 'ayah-audio', TRUE, 20971520, ARRAY['audio/mpeg', 'audio/mp4', 'audio/wav', 'audio/ogg']),
   ('logos', 'logos', TRUE, 5242880, ARRAY['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml']),
   ('certificates', 'certificates', FALSE, 20971520, ARRAY['application/pdf', 'image/png', 'image/jpeg']),
-  ('chat-media', 'chat-media', FALSE, 20971520, ARRAY['image/png', 'image/jpeg', 'image/webp', 'audio/mpeg', 'audio/ogg', 'application/pdf'])
+  ('chat-media', 'chat-media', FALSE, 20971520, ARRAY['image/png', 'image/jpeg', 'image/webp', 'audio/mpeg', 'audio/ogg', 'audio/webm', 'audio/mp4', 'audio/wav', 'application/pdf'])
 ON CONFLICT (id) DO UPDATE SET
   public = EXCLUDED.public,
   file_size_limit = EXCLUDED.file_size_limit,

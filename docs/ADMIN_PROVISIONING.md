@@ -42,13 +42,24 @@ In Supabase SQL Editor, run **in order** (skip `005`):
 2. Run `supabase/sql/promote_primary_admin.sql`  
    (or re-run `010_single_admin.sql`)
 
-## 3. Deploy Edge Function (create/reset users)
+## 3. Deploy Edge Function (create/reset users) — **required**
+
+Without this, Admin → Create user shows: *Failed to send a request to the Edge Function*.
+
+### CLI (recommended)
 
 ```bash
 supabase login
 supabase link --project-ref sgdohxojpjirwfnpyrpk
 supabase functions deploy admin-manage-user
 ```
+
+### Or Supabase Dashboard
+
+1. Open project → **Edge Functions**
+2. **Deploy a new function** → name: `admin-manage-user`
+3. Paste contents of `supabase/functions/admin-manage-user/index.ts`
+4. Deploy (JWT verification **ON**)
 
 Never put the service role key in `VITE_*` / Vercel frontend env.
 

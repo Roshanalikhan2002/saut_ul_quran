@@ -571,7 +571,12 @@
     "today": "Today",
     "yesterday": "Yesterday",
     "startChat": "Start chat",
-    "selectConversation": "Select a conversation"
+    "selectConversation": "Select a conversation",
+    "voiceNote": "Voice note",
+    "voiceSent": "Voice note sent",
+    "recording": "Recording… tap stop when done",
+    "stopRecording": "Stop recording",
+    "micDenied": "Microphone access denied. Allow mic permission and try again."
   },
   "announcements": {
     "title": "Announcements",
@@ -804,7 +809,12 @@
     "importComplete": "Full set present",
     "importSample": "Sample / partial data",
     "importEmpty": "No Quran rows yet",
-    "importSteps": "Import steps"
+    "importSteps": "Import steps",
+    "importSampleBtn": "Import sample",
+    "chooseImportFile": "Choose PDF / file",
+    "downloadSamplePdf": "Sample PDF",
+    "importUiHint": "Import sample, or upload a simple PDF/TXT/JSON. Only the admin can write.",
+    "importSuccess": "Imported {{surahs}} surah(s) and {{ayahs}} ayah(s)."
   },
   "verify": {
     "title": "Verify certificate",

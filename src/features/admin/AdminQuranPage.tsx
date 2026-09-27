@@ -1,23 +1,34 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { CheckCircle2, Circle } from 'lucide-react'
+import { toast } from 'sonner'
+import {
+  BookMarked,
+  BookOpen,
+  CheckCircle2,
+  Circle,
+  Download,
+  Upload,
+} from 'lucide-react'
 import { ModuleShell } from '@/components/shared/ModuleShell'
 import { StatCard } from '@/components/shared/StatCard'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { getErrorMessage, toError } from '@/lib/errors'
 import {
   getQuranImportStatus,
+  importBundledSampleCorpus,
+  importQuranCorpusFromFile,
   QURAN_IMPORT_STEPS,
   type QuranImportStatus,
 } from '@/services/quranImport'
-import { BookOpen, BookMarked } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { toError } from '@/lib/errors'
 
 export function AdminQuranPage() {
   const { t, i18n } = useTranslation()
   const locale = i18n.language === 'ur' ? 'ur' : 'en'
+  const fileRef = useRef<HTMLInputElement>(null)
   const [status, setStatus] = useState<QuranImportStatus | null>(null)
   const [loading, setLoading] = useState(true)
+  const [importing, setImporting] = useState(false)
   const [error, setError] = useState<Error | null>(null)
 
   const load = useCallback(async () => {
@@ -36,6 +47,33 @@ export function AdminQuranPage() {
     void load()
   }, [load])
 
+  async function runImport(
+    fn: () => Promise<{ surahUpserts: number; ayahUpserts: number }>,
+  ) {
+    setImporting(true)
+    try {
+      const result = await fn()
+      toast.success(
+        t('admin.importSuccess', {
+          surahs: result.surahUpserts,
+          ayahs: result.ayahUpserts,
+        }),
+      )
+      await load()
+    } catch (err) {
+      toast.error(getErrorMessage(err, t('common.errorRetry')))
+    } finally {
+      setImporting(false)
+      if (fileRef.current) fileRef.current.value = ''
+    }
+  }
+
+  function onFileChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    void runImport(() => importQuranCorpusFromFile(file))
+  }
+
   return (
     <ModuleShell
       title={t('admin.quranImport')}
@@ -44,11 +82,44 @@ export function AdminQuranPage() {
       error={error}
       onRetry={() => void load()}
       actions={
-        <Button type="button" variant="outline" onClick={() => void load()}>
-          {t('common.actions.refresh')}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" variant="outline" onClick={() => void load()}>
+            {t('common.actions.refresh')}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={importing}
+            onClick={() => void runImport(() => importBundledSampleCorpus())}
+          >
+            {importing ? t('common.pleaseWait') : t('admin.importSampleBtn')}
+          </Button>
+          <Button type="button" variant="outline" asChild>
+            <a href="/quran.sample.import.pdf" download>
+              <Download className="me-2 h-4 w-4" />
+              {t('admin.downloadSamplePdf')}
+            </a>
+          </Button>
+          <Button
+            type="button"
+            disabled={importing}
+            onClick={() => fileRef.current?.click()}
+          >
+            <Upload className="me-2 h-4 w-4" />
+            {t('admin.chooseImportFile')}
+          </Button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".pdf,.txt,.json,application/pdf,text/plain,application/json"
+            className="hidden"
+            onChange={onFileChange}
+          />
+        </div>
       }
     >
+      <p className="mb-6 text-sm text-muted-foreground">{t('admin.importUiHint')}</p>
+
       {status ? (
         <div className="mb-8 grid gap-4 sm:grid-cols-3">
           <StatCard
@@ -68,7 +139,9 @@ export function AdminQuranPage() {
               <Circle className="h-8 w-8 text-muted-foreground" />
             )}
             <div>
-              <p className="text-sm text-muted-foreground">{t('admin.importStatus')}</p>
+              <p className="text-sm text-muted-foreground">
+                {t('admin.importStatus')}
+              </p>
               <Badge variant={status.isComplete ? 'secondary' : 'outline'}>
                 {status.isComplete
                   ? t('admin.importComplete')
@@ -91,8 +164,7 @@ export function AdminQuranPage() {
             className="rounded-xl border border-border bg-card px-4 py-3"
           >
             <p className="font-medium text-navy">
-              {index + 1}.{' '}
-              {locale === 'ur' ? step.titleUr : step.titleEn}
+              {index + 1}. {locale === 'ur' ? step.titleUr : step.titleEn}
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
               {locale === 'ur' ? step.detailUr : step.detailEn}

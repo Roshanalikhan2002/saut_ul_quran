@@ -53,7 +53,17 @@ Create a JSON file:
 
 Sample file (DEMO only): [`supabase/data/quran.sample.json`](../supabase/data/quran.sample.json).
 
-## 3. Run the import script
+## 3. Import options
+
+### A. Admin UI (recommended for sample / moderate files)
+
+1. Sign in as admin → **Quran import**
+2. Click **Import sample** (Al-Fatiha + Al-Ikhlas), **or**
+3. Click **Choose JSON file** and select your licensed corpus JSON
+
+Uses your admin session + RLS (`is_admin()`). No service role in the browser.
+
+### B. CLI (large full corpus)
 
 Requires **service role** (bypasses RLS). Never expose it to Vite / the browser.
 

@@ -143,7 +143,7 @@ export async function listSessions(filters?: {
   let query = supabase
     .from('attendance_sessions')
     .select(
-      '*, courses(*, course_translations(*)), attendance_records(*, profiles(*))',
+      '*, courses(*, course_translations(*)), attendance_records(*, profiles!attendance_records_student_id_fkey(*))',
     )
     .order('session_date', { ascending: false })
 

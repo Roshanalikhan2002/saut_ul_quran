@@ -182,6 +182,10 @@ export async function listTajweedRules(): Promise<TajweedRule[]> {
     .from('tajweed_rules')
     .select('*')
     .order('sort_order', { ascending: true })
-  if (error) throw error
+  if (error) {
+    // Optional seed table — don't break Tajweed page if empty/missing
+    console.warn('[tajweed] listTajweedRules', error.message)
+    return []
+  }
   return data ?? []
 }

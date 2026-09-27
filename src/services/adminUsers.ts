@@ -28,7 +28,19 @@ async function invokeAdminManageUser(body: Record<string, unknown>) {
   const { data, error } = await supabase.functions.invoke('admin-manage-user', {
     body,
   })
-  if (error) throw toError(error)
+  if (error) {
+    const msg = toError(error).message || String(error)
+    if (
+      /failed to send|not found|404|FunctionsFetchError|Failed to send a request/i.test(
+        msg,
+      )
+    ) {
+      throw new Error(
+        'Edge Function "admin-manage-user" is not deployed. In Supabase → Edge Functions, deploy admin-manage-user (see docs/ADMIN_PROVISIONING.md).',
+      )
+    }
+    throw toError(error)
+  }
   if (data?.error) throw new Error(String(data.error))
   return data
 }

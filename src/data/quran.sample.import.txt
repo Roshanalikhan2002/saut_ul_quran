@@ -1,0 +1,18 @@
+# Simple Quran import format (save as .txt or print/export to PDF)
+# SURAH number | English name | Arabic name | makki|madani
+# ayah# | Arabic | English | Urdu
+
+SURAH 1 | Al-Fatiha | الفاتحة | makki
+1 | بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ | In the name of Allah, the Entirely Merciful, the Especially Merciful. | اللہ کے نام سے جو بے حد مہربان، نہایت رحم والا ہے۔
+2 | ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَٰلَمِينَ | All praise is due to Allah, Lord of the worlds. | سب تعریف اللہ کے لیے ہے جو تمام جہانوں کا رب ہے۔
+3 | ٱلرَّحْمَٰنِ ٱلرَّحِيمِ | The Entirely Merciful, the Especially Merciful. | بے حد مہربان، نہایت رحم والا۔
+4 | مَٰلِكِ يَوْمِ ٱلدِّينِ | Sovereign of the Day of Recompense. | جزا کے دن کا مالک۔
+5 | إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ | It is You we worship and You we ask for help. | ہم صرف تیری عبادت کرتے ہیں اور تجھی سے مدد مانگتے ہیں۔
+6 | ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ | Guide us to the straight path. | ہمیں سیدھا راستہ دکھا۔
+7 | صِرَٰطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ ٱلْمَغْضُوبِ عَلَيْهِمْ وَلَا ٱلضَّآلِّينَ | The path of those upon whom You have bestowed favor, not of those who have earned anger or of those who are astray. | ان لوگوں کا راستہ جن پر تو نے انعام کیا، نہ کہ جن پر غضب ہوا اور نہ گمراہوں کا۔
+
+SURAH 112 | Al-Ikhlas | الإخلاص | makki
+1 | قُلْ هُوَ ٱللَّهُ أَحَدٌ | Say, He is Allah, [who is] One. | کہو وہ اللہ ایک ہے۔
+2 | ٱللَّهُ ٱلصَّمَدُ | Allah, the Eternal Refuge. | اللہ بے نیاز ہے۔
+3 | لَمْ يَلِدْ وَلَمْ يُولَدْ | He neither begets nor is born. | نہ اس کی کوئی اولاد ہے اور نہ وہ کسی کی اولاد۔
+4 | وَلَمْ يَكُن لَّهُۥ كُفُوًا أَحَدٌۢ | Nor is there to Him any equivalent. | اور اس کے برابر کوئی نہیں۔

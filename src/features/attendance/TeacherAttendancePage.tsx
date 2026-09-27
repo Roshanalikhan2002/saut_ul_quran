@@ -8,6 +8,7 @@ import { StatusBadge } from '@/components/shared/StatusBadge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { getErrorMessage } from '@/lib/errors'
 import {
   Dialog,
   DialogContent,
@@ -149,7 +150,7 @@ export function TeacherAttendancePage() {
         setDraft(next)
       })
       .catch((err) => {
-        toast.error(err instanceof Error ? err.message : String(err))
+        toast.error(getErrorMessage(err, t('common.errorRetry')))
       })
       .finally(() => {
         if (!cancelled) setLoadingRoster(false)
@@ -180,7 +181,7 @@ export function TeacherAttendancePage() {
       setMarkOpen(false)
       await load()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : String(err))
+      toast.error(getErrorMessage(err, t('common.errorRetry')))
     } finally {
       setSaving(false)
     }
@@ -205,7 +206,7 @@ export function TeacherAttendancePage() {
       setEditRecordId(null)
       await load()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : String(err))
+      toast.error(getErrorMessage(err, t('common.errorRetry')))
     }
   }
 
@@ -442,29 +443,42 @@ export function TeacherAttendancePage() {
                   key={id}
                   className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border px-3 py-2"
                 >
-                  <span className="text-sm font-medium">
+                  <span className="min-w-0 flex-1 text-sm font-medium">
                     {studentNameByProfileId.get(id) || t('common.unknown')}
                   </span>
-                  <Select
-                    value={draft[id] ?? 'present'}
-                    onValueChange={(v) =>
-                      setDraft((prev) => ({
-                        ...prev,
-                        [id]: v as AttendanceStatus,
-                      }))
-                    }
-                  >
-                    <SelectTrigger className="w-36">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {STATUSES.map((s) => (
-                        <SelectItem key={s} value={s}>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(['present', 'absent', 'late', 'excused'] as AttendanceStatus[]).map(
+                      (s) => (
+                        <Button
+                          key={s}
+                          type="button"
+                          size="sm"
+                          variant={
+                            (draft[id] ?? 'present') === s
+                              ? 'default'
+                              : 'outline'
+                          }
+                          className={
+                            s === 'present'
+                              ? undefined
+                              : s === 'absent'
+                                ? (draft[id] ?? 'present') === s
+                                  ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
+                                  : undefined
+                                : undefined
+                          }
+                          onClick={() =>
+                            setDraft((prev) => ({
+                              ...prev,
+                              [id]: s,
+                            }))
+                          }
+                        >
                           {t(`attendance.${s}`)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                        </Button>
+                      ),
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>

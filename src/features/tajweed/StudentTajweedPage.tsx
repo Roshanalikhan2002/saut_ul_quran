@@ -37,7 +37,7 @@ import {
   type TajweedRule,
   type TajweedSegment,
 } from '@/services/tajweed'
-import { toError } from '@/lib/errors'
+import { toError, getErrorMessage } from '@/lib/errors'
 
 function renderColoredAyah(text: string, segments: TajweedSegment[]) {
   if (!segments.length) {
@@ -98,30 +98,37 @@ export function StudentTajweedPage() {
     try {
       const [surahRows, ruleRows] = await Promise.all([
         listSurahs(),
-        listTajweedRules(),
+        listTajweedRules().catch(() => [] as TajweedRule[]),
       ])
       setSurahs(surahRows)
       setRules(ruleRows)
       if (!surahId && surahRows[0]) setSurahId(surahRows[0].id)
     } catch (err) {
       setError(toError(err))
+      toast.error(getErrorMessage(err, t('common.errorRetry')))
     } finally {
       setLoading(false)
     }
-  }, [surahId])
+  }, [surahId, t])
 
   const loadSurah = useCallback(
     async (id: string) => {
-      if (!id || !user) return
+      if (!id || !user) {
+        setAyahLoading(false)
+        return
+      }
       setAyahLoading(true)
       try {
-        const ayahRows = await getAyahsBySurah(id)
+        const ayahRows = await getAyahsBySurah(id).catch((err) => {
+          toast.error(getErrorMessage(err, t('common.errorRetry')))
+          return [] as Ayah[]
+        })
         setAyahs(ayahRows)
         const ids = ayahRows.map((a) => a.id)
         const [audioRows, knowledge, pct] = await Promise.all([
-          listAyahAudioForSurah(ids),
-          getKnowledgeForStudent(user.id, ids),
-          getRecordingProgressPercent(id),
+          listAyahAudioForSurah(ids).catch(() => [] as AyahAudio[]),
+          getKnowledgeForStudent(user.id, ids).catch(() => []),
+          getRecordingProgressPercent(id).catch(() => 0),
         ])
         const map: Record<string, AyahAudio> = {}
         for (const row of audioRows) {
@@ -143,12 +150,13 @@ export function StudentTajweedPage() {
           audioRef.current.src = ''
         }
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : String(err))
+        toast.error(getErrorMessage(err, t('common.errorRetry')))
+        setAyahs([])
       } finally {
         setAyahLoading(false)
       }
     },
-    [user],
+    [user, t],
   )
 
   useEffect(() => {
@@ -202,7 +210,7 @@ export function StudentTajweedPage() {
       setActiveAyahId(ayah.id)
       setPlaying(true)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : String(err))
+      toast.error(getErrorMessage(err, t('common.errorRetry')))
     }
   }
 
@@ -219,7 +227,7 @@ export function StudentTajweedPage() {
       setKnownIds((prev) => new Set(prev).add(ayahId))
       toast.success(t('tajweed.markedKnown'))
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : String(err))
+      toast.error(getErrorMessage(err, t('common.errorRetry')))
     }
   }
 
